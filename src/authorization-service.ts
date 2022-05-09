@@ -1,5 +1,5 @@
-import { EntityProvider, EntityReference } from "./entity";
-import { AssignedRole, PersistenceStrategy, Role } from "./persistence";
+import { EntityProvider, EntityReference } from 'src/entity';
+import { AssignedRole, PersistenceStrategy, Role } from 'src/persistence';
 
 export default class AuthorizationService {
 	private _strategy: PersistenceStrategy;
@@ -19,7 +19,7 @@ export default class AuthorizationService {
 		}
 	}
 
-	async assignRole(role: Role, actor: any, context: any): Promise<AssignedRole> {
+	async assignRole(role: string, actor: any, context: any): Promise<AssignedRole> {
 		const actorRef: EntityReference = await this._provider.getReference(actor);
 		const contextRef: EntityReference = await this._provider.getReference(context);
 		return this._strategy.assignRole(role, actorRef, contextRef);
@@ -34,7 +34,7 @@ export default class AuthorizationService {
 	private async _canPerform(operation: string, actor: EntityReference, context: EntityReference): Promise<boolean> {
 		const assignedRoles = await this._strategy.getAssignedRoles(actor, context);
 		const roles = await this._strategy.getRoles(assignedRoles.map(({ name }) => name));
-		if (roles.filter(({ operations }) => operations.includes(operation)).length) {
+		if (roles.filter(({ ops: operations }) => operations.includes(operation)).length) {
 			return true;
 		} else {
 			const parent = await this._provider.getParent(context);
