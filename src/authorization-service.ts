@@ -1,44 +1,48 @@
-export interface Actor {}
-export interface Context {}
-export interface Role {
-	name: string;
-	operations: string[];
-}
-export interface AssignedRole {
-	name: string;
-	actor: Actor;
-	context: Context;
-}
-export interface RoleRepository {
-	assign(role: Role, actor: Actor, context: Context): Promise<AssignedRole>;
-	create(name: string, operations: string[]): Promise<Role>;
-	findByName(name: string): Promise<Role | undefined>;
-}
-export interface HierarchyRepository {}
+import { EntityProvider, EntityReference } from "./entity";
+import { AssignedRole, PersistenceStrategy, Role } from "./persistence";
 
 export default class AuthorizationService {
-	private _roleRepo: RoleRepository;
-	private _hierRepo: HierarchyRepository;
+	private _strategy: PersistenceStrategy;
+	private _provider: EntityProvider;
 
-	constructor(rolesRepository: RoleRepository, hierarchyRepository: HierarchyRepository) {
-		this._roleRepo = rolesRepository;
-		this._hierRepo = hierarchyRepository;
+	constructor(persistenceStrategy: PersistenceStrategy, entityProvider: EntityProvider) {
+		this._strategy = persistenceStrategy;
+		this._provider = entityProvider;
 	}
 
 	async defineRole(name: string, operations: string[]): Promise<Role> {
-		const role = await this._roleRepo.findByName(name);
+		const role = await this._strategy.findRoleByName(name);
 		if (role) {
-			throw new Error('Duplicate role');
+			return this._strategy.updateRole(name, operations);
 		} else {
-			return this._roleRepo.create(name, operations);
+			return this._strategy.createRole(name, operations);
 		}
 	}
 
-	async assignRole(role: Role, actor: Actor, context: Context): Promise<AssignedRole> {
-		return this._roleRepo.assign(role, actor, context);
+	async assignRole(role: Role, actor: any, context: any): Promise<AssignedRole> {
+		const actorRef: EntityReference = await this._provider.getReference(actor);
+		const contextRef: EntityReference = await this._provider.getReference(context);
+		return this._strategy.assignRole(role, actorRef, contextRef);
 	}
 
-	async canPerform(operation: string, actor: Actor, context: Context): Promise<boolean> {
-		throw new Error('Method not implemented.');
+	async canPerform(operation: string, actor: any, context: any): Promise<boolean> {
+		const actorRef = await this._provider.getReference(actor);
+		const contextRef = await this._provider.getReference(context);
+		return this._canPerform(operation, actorRef, contextRef);
+	}
+
+	private async _canPerform(operation: string, actor: EntityReference, context: EntityReference): Promise<boolean> {
+		const assignedRoles = await this._strategy.getAssignedRoles(actor, context);
+		const roles = await this._strategy.getRoles(assignedRoles.map(({ name }) => name));
+		if (roles.filter(({ operations }) => operations.includes(operation)).length) {
+			return true;
+		} else {
+			const parent = await this._provider.getParent(context);
+			if (parent) {
+				return this._canPerform(operation, actor, parent);
+			} else {
+				return false;
+			}
+		}
 	}
 }
