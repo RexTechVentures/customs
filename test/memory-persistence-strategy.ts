@@ -1,5 +1,5 @@
 import { EntityReference, refEq } from 'src/entity';
-import { AssignedRole, PersistenceStrategy, Role } from '.';
+import { AssignedRole, PersistenceStrategy, Role } from '../src/persistence';
 
 export default class MemoryStrategy implements PersistenceStrategy {
 	private _roles: Role[];

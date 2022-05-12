@@ -25,13 +25,17 @@ export default class AuthorizationService {
 		return this._strategy.assignRole(role, actorRef, contextRef);
 	}
 
+    getReference(entity: any) {
+        return this._provider.getReference(entity);
+    }
+
 	async canPerform(operation: string, actor: any, context: any): Promise<boolean> {
 		const actorRef = await this._provider.getReference(actor);
 		const contextRef = await this._provider.getReference(context);
 		return this._canPerform(operation, actorRef, contextRef);
 	}
 
-	private async _canPerform(operation: string, actor: EntityReference, context: EntityReference): Promise<boolean> {
+	private async _canPerform(operation: string, actor: EntityReference, context?: EntityReference): Promise<boolean> {
 		const assignedRoles = await this._strategy.getAssignedRoles(actor, context);
 		const roles = await this._strategy.getRoles(assignedRoles.map(({ name }) => name));
 		if (roles.filter(({ ops: operations }) => operations.includes(operation)).length) {

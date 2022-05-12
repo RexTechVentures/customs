@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import AuthorizationService from 'src/authorization-service';
-import MemoryStrategy from 'src/persistence/memory';
+import MemoryStrategy from 'test/memory-persistence-strategy';
 import { entities, roles, assignedRoles, org1, org2, thing1, thing2, user1, user2 } from './fixture';
 import { MemoryProvider } from './memory-provider';
 
