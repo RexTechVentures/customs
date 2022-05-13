@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import mongoose, { Mongoose } from 'mongoose';
 import MongoosePersistenceStrategy from 'src/persistence/mongoose';
-import { roles, assignedRoles } from './fixture';
+import { assignedRoles, roles } from './fixture';
 
 const connection: Promise<Mongoose> = mongoose.connect('mongodb://localhost:27017/rbac');
 

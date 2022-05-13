@@ -1,8 +1,8 @@
 import { expect } from 'chai';
 import AuthorizationService from 'src/authorization-service';
 import MemoryStrategy from 'test/memory-persistence-strategy';
-import { entities, roles, assignedRoles, org1, org2, thing1, thing2, user1, user2 } from './fixture';
-import { MemoryProvider } from './memory-provider';
+import { assignedRoles, entities, org1, org2, roles, thing1, thing2, user1, user2 } from './fixture';
+import MemoryProvider from './memory-provider';
 
 const strategy = new MemoryStrategy(roles, assignedRoles);
 const provider = new MemoryProvider(entities);

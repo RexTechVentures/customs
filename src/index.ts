@@ -6,6 +6,5 @@ import MongoosePersistenceStrategy from './persistence/mongoose';
 export default AuthorizationService;
 
 export { EntityProvider, EntityReference, refEq };
-
 export { PersistenceStrategy };
 export { MongoosePersistenceStrategy };

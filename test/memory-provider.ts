@@ -4,7 +4,7 @@ export interface Entity extends EntityReference {
 	parent?: EntityReference;
 }
 
-export class MemoryProvider implements EntityProvider {
+export default class MemoryProvider implements EntityProvider {
 	private _entities: Entity[];
 
 	constructor(entities: Entity[]) {
@@ -12,8 +12,9 @@ export class MemoryProvider implements EntityProvider {
 	}
 
 	async getReference(entity: Entity): Promise<EntityReference> {
-		return entity;
+		return { id: entity.id, type: entity.type };
 	}
+
 	async getParent(entityReference: EntityReference): Promise<EntityReference | undefined> {
 		const entity = this._entities.find(entity => refEq(entity, entityReference));
 		return entity ? entity.parent : entity;
