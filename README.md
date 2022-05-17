@@ -198,3 +198,12 @@ router.put(
   controller.createBlog
 );
 ```
+
+## TODO List
+
+Customs is currently in a "Minimum Viable Product" state, but there's more functionality that seems obviously useful. Here are the current plans:
+
+-   [ ] Sequelize support
+-   [ ] More tools for searching and managing `Roles` and assignments
+-   [ ] Support for multi-operation authorization tests (i.e. `canAny`, `canAll`, etc)
+-   [ ] Explore support for other db's (Redis, DynamoDB, Cassandra, etc)
