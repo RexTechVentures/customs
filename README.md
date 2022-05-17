@@ -180,3 +180,21 @@ A few things to note in the above example:
 -   The `can` method requires a resolver to determine the target context of the operation, but this same resolver could be reused for _any_ method that targets a user id as its context.
 -   The currently authenticated user is resolved using the resolver configured on the `Middleware` instance
 -   This declaration does not care who the logged in user is or what `Role` that user has been assigned. It is _only_ interested in whether or not the authenticated entity is allowed to read the target user object.
+
+The Customs middleware also implements logical `and` and `or` operators that allow the host application to compose multiple authorizations, and exposes the `Predicate` interface through which a host application can implement custom authorization methods if needed. Here's another example to illustrate:
+
+```typescript
+import { Middleware:{ can, or, Predicate }} from '@rex/customs';
+
+// always succeed if in the dev environment
+const isDev:Predicate = async (req: Request, authService: AuthorizationService, actorResolver: Resolver) => {
+  return req.hostname.startsWith('dev.'));
+};
+
+router.put(
+  '/blog/user/:id',
+  passport.authenticate('cookie'),
+  customs.authorize(or(can(CREATE, blogResolver), isDev)),
+  controller.createBlog
+);
+```
