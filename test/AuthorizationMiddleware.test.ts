@@ -10,7 +10,8 @@ const strategy = new MemoryStrategy(roles, assignedRoles);
 const provider = new MemoryProvider(entities);
 
 const authxService = new AuthorizationService(strategy, provider);
-configure(authxService);
+const actorResolver = async (req:Request) => req.user;
+configure(authxService, actorResolver);
 
 const app = express();
 app.use(express.json());

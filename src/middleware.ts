@@ -2,12 +2,15 @@ import { NextFunction, Request, Response } from 'express';
 import AuthorizationService from './authorization-service';
 
 export type Predicate = (req: Request) => Promise<boolean>;
+export type Resolver = (req: Request) => Promise<any | undefined>;
 export class AuthorizationDeniedError extends Error {}
 
 let _authService: AuthorizationService;
+let _actorResolver: Resolver;
 
-export const configure = (authService: AuthorizationService) => {
+export const configure = (authService: AuthorizationService, actorResolver:Resolver) => {
 	_authService = authService;
+	_actorResolver = actorResolver;
 };
 
 export const authorize = (...futurePredicates: Promise<Predicate>[]) => {
@@ -43,13 +46,13 @@ export const or = async (...futurePredicates: Promise<Predicate>[]) => {
 };
 export const can = async (
 	operation: string,
-	contextResolver: (req: Request) => Promise<any | undefined>
+	contextResolver: Resolver
 ): Promise<Predicate> => {
 	return async (req: Request) => {
-		const user = req.user;
+		const actor = await _actorResolver(req);
 		const context = await contextResolver(req);
-		if (user && context) {
-			return _authService.canPerform(operation, user, context);
+		if (actor && context) {
+			return _authService.canPerform(operation, actor, context);
 		} else {
 			return false;
 		}

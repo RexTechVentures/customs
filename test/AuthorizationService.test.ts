@@ -25,5 +25,8 @@ describe('AuthorizationService', () => {
 		await authxService.defineRole('role7', ['f']);
 		await authxService.assignRole('role7', user2, org2);
 		expect(await authxService.canPerform('f', user2, thing2));
+
+		await authxService.revokeRole('role7', user2, org2);
+		expect(await authxService.canPerform('f', user2, thing2)).to.be.false;
 	});
 });

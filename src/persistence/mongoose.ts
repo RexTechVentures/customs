@@ -1,5 +1,6 @@
 import { Model, Mongoose, Schema, SchemaTypes } from 'mongoose';
 import { EntityReference } from 'src/entity';
+import { roles } from 'test/fixture';
 import { v4 } from 'uuid';
 import { AssignedRole, PersistenceStrategy, Role } from '.';
 
@@ -90,6 +91,16 @@ export default class MongoosePersistenceStrategy implements PersistenceStrategy 
 		return assignedRoles.create({ name: roleName, actor, context });
 	}
 
+	async revokeRole(role: string, actor: EntityReference, context: EntityReference): Promise<AssignedRole> {
+		const assignedRoles = await this._assignedRoles;
+		const assignedRole = await assignedRoles.findOne({ name: role, actor, context });
+		if (!assignedRole) {
+			throw new Error('Role not assigned');
+		} else {
+			return assignedRole.remove();
+		}
+	}
+
 	async deleteRole(roleName: string) {
 		const roles = await this._roles;
 		const assignedRoles = await this._assignedRoles;
@@ -98,7 +109,7 @@ export default class MongoosePersistenceStrategy implements PersistenceStrategy 
 		if (!role) throw new Error('Role not found');
 
 		const existingAssignments = await assignedRoles.find({ name: roleName });
-		await Promise.all(existingAssignments.map(assignedRole => assignedRole.remove()));
+		await Promise.all(existingAssignments.map(assignedRole => this.revokeRole(roleName, assignedRole.actor, assignedRole.context)));
 
 		return role.remove();
 	}

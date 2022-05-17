@@ -54,4 +54,19 @@ export default class MemoryStrategy implements PersistenceStrategy {
 		this._assignments.push(assignedRole);
 		return assignedRole;
 	}
+
+	async revokeRole(role: string, actor: EntityReference, context: EntityReference): Promise<AssignedRole> {
+		const i = this._assignments.findIndex(assignment =>
+			assignment.name === role &&
+			refEq(assignment.actor, actor) && 
+			!!context ? refEq(assignment.context, context) : !assignment.context
+		);
+		if (i === -1) {
+			throw new Error('Role not assigned');
+		} else {
+			const assignment = this._assignments[i];
+			this._assignments.splice(i, 1);
+			return assignment;
+		}
+	}
 }
