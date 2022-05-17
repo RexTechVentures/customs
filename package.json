@@ -1,5 +1,5 @@
 {
-    "name": "@rex/node-rbac",
+    "name": "@rex/customs",
     "version": "1.0.0",
     "license": "UNLICENSED",
     "description": "Foundational approach for implementing RBAC in Node",

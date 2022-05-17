@@ -1,6 +1,6 @@
 import express, { NextFunction, Request, Response } from 'express';
 import AuthorizationService from 'src/authorization-service';
-import { AuthorizationDeniedError, authorize, can, configure, or, Predicate } from 'src/middleware';
+import Middleware, { AuthorizationDeniedError, can, or, Resolver } from 'src/middleware';
 import supertest, { SuperTest, Test } from 'supertest';
 import { assignedRoles, entities, roles } from 'test/fixture';
 import MemoryStrategy from 'test/memory-persistence-strategy';
@@ -10,8 +10,9 @@ const strategy = new MemoryStrategy(roles, assignedRoles);
 const provider = new MemoryProvider(entities);
 
 const authxService = new AuthorizationService(strategy, provider);
-const actorResolver = async (req:Request) => req.user;
-configure(authxService, actorResolver);
+const actorResolver = async (req: Request) => req.user;
+
+const customs = new Middleware(authxService, actorResolver);
 
 const app = express();
 app.use(express.json());
@@ -39,7 +40,7 @@ declare global {
 	}
 }
 
-const resolveEntity: Predicate = async (req: Request): Promise<any | undefined> => {
+const resolveEntity: Resolver = async (req: Request): Promise<any | undefined> => {
 	return entities.find(entity => entity.id === req.params.id && entity.type === req.params.type);
 };
 
@@ -47,10 +48,10 @@ const handle = async (req: Request, res: Response, next: NextFunction) => {
 	res.json({});
 };
 
-app.get('/a/:type/:id', authorize(can('a', resolveEntity)), handle);
-app.get('/b/:type/:id', authorize(can('b', resolveEntity)), handle);
-app.get('/ab/:type/:id', authorize(can('a', resolveEntity), can('b', resolveEntity)), handle);
-app.get('/ba/:type/:id', authorize(or(can('a', resolveEntity), can('b', resolveEntity))), handle);
+app.get('/a/:type/:id', customs.authorize(can('a', resolveEntity)), handle);
+app.get('/b/:type/:id', customs.authorize(can('b', resolveEntity)), handle);
+app.get('/ab/:type/:id', customs.authorize(can('a', resolveEntity), can('b', resolveEntity)), handle);
+app.get('/ba/:type/:id', customs.authorize(or(can('a', resolveEntity), can('b', resolveEntity))), handle);
 
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
 	if (err instanceof AuthorizationDeniedError) {
