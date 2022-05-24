@@ -1,6 +1,6 @@
 {
     "name": "@rex/customs",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "license": "UNLICENSED",
     "description": "Foundational approach for implementing RBAC in Node",
     "main": "./dist/index.js",
@@ -11,7 +11,8 @@
         "lint": "eslint . --ext .ts",
         "prettier:check": "prettier --check .",
         "prettier:fix": "prettier --write .",
-        "test": "cross-env NODE_ENV=test mocha"
+        "test": "cross-env NODE_ENV=test mocha",
+        "release": "yarn build && npm release",
     },
     "dependencies": {
         "mongoose": "^6.3.2",
