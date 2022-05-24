@@ -1,10 +1,10 @@
 {
     "name": "@rex/customs",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "license": "UNLICENSED",
     "description": "Foundational approach for implementing RBAC in Node",
-    "main": "./dist/index.js",
-    "types": "./dist/index.d.ts",
+    "main": "./dist/src/index.js",
+    "types": "./dist/src/index.d.ts",
     "author": "cdement@rex.com",
     "scripts": {
         "build": "tsc",
