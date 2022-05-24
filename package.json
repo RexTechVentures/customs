@@ -1,6 +1,6 @@
 {
     "name": "@rex/customs",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "license": "UNLICENSED",
     "description": "Foundational approach for implementing RBAC in Node",
     "main": "./dist/index.js",
