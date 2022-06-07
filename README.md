@@ -22,7 +22,7 @@ Customs' authorization model is based on traditional ["Role-Based Access Control
 
 When an entity attempts to perform an operation on a target context, Customs can then be invoked to verify that the entity has been granted the necessary permission (via some `Role` assignment) to perform the operation on the target context, or some parent context of the target context through which the permission is inherited.
 
-Crucially - note the separation between `Role` and `Operation` as this is an important distinction. A `Role` is assigned to an entity, whereas an `Operation` is the action that entity will be entitled to perform. When authorizing an action, it is always the `Operation` that is being authorized, not the `Role`. This distinction dramatically reduces the amount of refactoring required when the function of a `Role` changes as an application evolves, as the reqeusting features rarely need to care.
+Crucially - note the separation between `Role` and `Operation` as this is an important distinction. A `Role` is assigned to an entity, whereas an `Operation` is the action that entity will be entitled to perform. When authorizing an action, it is always the `Operation` that is being authorized, not the `Role`. This distinction dramatically reduces the amount of refactoring required when the function of a `Role` changes as an application evolves, as the requesting features rarely need to care.
 
 To use Customs, there are a few steps you must take:
 
@@ -36,7 +36,7 @@ To use Customs, there are a few steps you must take:
 
 ### Implement your `EntityProvider`
 
-Out of the box, Customs knows nothing about your data model. To bridge that gap, Customs requires a very simple (only 2 methods) interface known as an `EntityProvider`. This interface tells Customs how to how to:
+Out of the box, Customs knows nothing about your data model. To bridge that gap, Customs requires a very simple (only 2 methods) interface known as an `EntityProvider`. This interface tells Customs how to:
 
 1. **Identify an entity**. To reference an entity, Customs needs to know the id and type of the entity. Both are arbitrary strings that can be _anything_ that makes sense to the host application.
 2. **Identify an entity's parent**. To properly authorize requests, Customs need to be told when an entity belongs to another entity (only relevant if your data model has a hierarchy for permissions purposes). If an entity has no parent, simply return nothing!
@@ -178,7 +178,7 @@ router.get(
 A few things to note in the above example:
 
 -   The `can` method requires a resolver to determine the target context of the operation, but this same resolver could be reused for _any_ method that targets a user id as its context.
--   The currently authenticated user is resolved using the resolver configured on the `Middleware` instance
+-   The currently authenticated user is resolved using the resolver configured on the `Middleware` instance.
 -   This declaration does not care who the logged in user is or what `Role` that user has been assigned. It is _only_ interested in whether or not the authenticated entity is allowed to read the target user object.
 
 The Customs middleware also implements logical `and` and `or` operators that allow the host application to compose multiple authorizations, and exposes the `Predicate` interface through which a host application can implement custom authorization methods if needed. Here's another example to illustrate:
