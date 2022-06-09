@@ -74,23 +74,14 @@ export default class MongoosePersistenceStrategy implements PersistenceStrategy 
 
 	async getRoles(roleNames: string[]): Promise<Role[]> {
 		const roles = await this._roles;
-		console.log('looking for roles');
-		try {
-			const query: any = roles.find({ name: { $in: roleNames } });
-			const cache = query.cache(0, 'roles');
-			console.log('cache', roles);
-			const data = cache.exec();
-			console.log('data', await data);
-		} catch (e) {
-			console.log('global error handler');
-			console.log(e);
-		}
-		const response = await (roles.find({ name: { $in: roleNames } }) as any)
-			.cache(0, 'roles')
-			.exec((data: any, err: any) => {
-				console.log('callback ', data, err);
-			});
-		console.log('LOG_LEVEL', response);
+		console.time('fetch-role');
+		const stats: any = await roles
+			.find({ name: { $in: roleNames } })
+			.explain()
+			.exec();
+		const response = await (roles.find({ name: { $in: roleNames } }) as any).cache(0, 'roles').exec();
+		console.timeEnd('fetch-role');
+		console.log('Getting query stats', stats.executionStats);
 		return response;
 	}
 

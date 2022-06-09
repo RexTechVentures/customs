@@ -43,9 +43,7 @@ export default class AuthorizationService {
 
 	private async _canPerform(operation: string, actor: EntityReference, context?: EntityReference): Promise<boolean> {
 		const assignedRoles = await this._strategy.getAssignedRoles(actor, context);
-		console.log('assigned roles ', assignedRoles);
 		const roles = await this._strategy.getRoles(assignedRoles.map(({ name }) => name));
-		console.log('actual roles ', roles);
 		if (roles.filter(({ ops: operations }) => operations.includes(operation)).length) {
 			return true;
 		} else {
