@@ -46,16 +46,20 @@ export default class MongoosePersistenceStrategy implements PersistenceStrategy 
 	private _roles: Promise<Model<Role & MongoEntity>>;
 	private _assignedRoles: Promise<Model<AssignedRole & MongoEntity>>;
 
-	constructor(connection: Promise<Mongoose>, redisUrl: string) {
+	constructor(connection: Promise<Mongoose>, redisUrl?: string) {
 		this._roles = connection.then(database => database.model<Role & MongoEntity>('roles', RoleSchema));
 		this._assignedRoles = connection.then(database =>
 			database.model<AssignedRole & MongoEntity>('assigned_roles', AssignedRoleSchema)
 		);
+		const client = redisUrl
+			? redis.createClient({
+					url: redisUrl,
+			  })
+			: null;
+		const engine = redisUrl ? 'redis' : 'memory';
 		cachegoose(mongoose, {
 			engine: 'redis',
-			client: redis.createClient({
-				url: redisUrl,
-			}),
+			client,
 		});
 	}
 
