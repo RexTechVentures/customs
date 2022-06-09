@@ -1,11 +1,12 @@
 import { Model, Mongoose, Schema, SchemaTypes } from 'mongoose';
-import * as mongoose from 'mongoose';
 import { EntityReference } from 'src/entity';
 import { roles } from 'test/fixture';
 import { v4 } from 'uuid';
 import { AssignedRole, PersistenceStrategy, Role } from '.';
-import * as cachegoose from 'recachegoose';
-import redis from 'redis';
+
+// Cachegoose doesnt support es6 imports, didnt find a better way, feel free to change.
+const cachegoose = require('recachegoose');
+import { createClient } from 'redis';
 
 interface MongoEntity {
 	_id: string;
@@ -45,27 +46,52 @@ AssignedRoleSchema.index({ actor: 1, context: 1, name: 1 }, { unique: true });
 export default class MongoosePersistenceStrategy implements PersistenceStrategy {
 	private _roles: Promise<Model<Role & MongoEntity>>;
 	private _assignedRoles: Promise<Model<AssignedRole & MongoEntity>>;
+	private _cache: boolean = false;
 
-	constructor(connection: Promise<Mongoose>, redisUrl?: string) {
+	constructor(connection: Promise<Mongoose>, redisUrl?: any) {
 		this._roles = connection.then(database => database.model<Role & MongoEntity>('roles', RoleSchema));
 		this._assignedRoles = connection.then(database =>
 			database.model<AssignedRole & MongoEntity>('assigned_roles', AssignedRoleSchema)
 		);
+		this.initCacheGoose(connection, redisUrl);
+	}
+
+	async initCacheGoose(connection: Promise<Mongoose>, redisUrl?: string) {
 		const client = redisUrl
-			? redis.createClient({
+			? createClient({
 					url: redisUrl,
 			  })
 			: null;
-		const engine = redisUrl ? 'redis' : 'memory';
-		cachegoose(mongoose, {
-			engine: 'redis',
+		await client?.connect();
+		// Test in memory caching only
+		const engine = redisUrl ? 'memory' : 'memory';
+		console.log('initing cache ', engine, client);
+		cachegoose(await connection, {
+			engine,
 			client,
 		});
 	}
 
 	async getRoles(roleNames: string[]): Promise<Role[]> {
 		const roles = await this._roles;
-		return (roles.find({ name: { $in: roleNames } }) as any).cache(0, 'roles');
+		console.log('looking for roles');
+		try {
+			const query: any = roles.find({ name: { $in: roleNames } });
+			const cache = query.cache(0, 'roles');
+			console.log('cache', roles);
+			const data = cache.exec();
+			console.log('data', await data);
+		} catch (e) {
+			console.log('global error handler');
+			console.log(e);
+		}
+		const response = await (roles.find({ name: { $in: roleNames } }) as any)
+			.cache(0, 'roles')
+			.exec((data: any, err: any) => {
+				console.log('callback ', data, err);
+			});
+		console.log('LOG_LEVEL', response);
+		return response;
 	}
 
 	async getAssignedRoles(actor: EntityReference, context?: EntityReference): Promise<AssignedRole[]> {
@@ -89,6 +115,7 @@ export default class MongoosePersistenceStrategy implements PersistenceStrategy 
 		if (!role) throw new Error('Role not found');
 		role.ops = operations;
 		await role.save();
+		cachegoose.clearCache(`roles`);
 		cachegoose.clearCache(`role-${name}`);
 		return role;
 	}

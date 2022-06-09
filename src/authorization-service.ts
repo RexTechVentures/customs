@@ -25,10 +25,10 @@ export default class AuthorizationService {
 		return this._strategy.assignRole(role, actorRef, contextRef);
 	}
 
-	async revokeRole(role:string, actor: any, context: any): Promise<AssignedRole> {
+	async revokeRole(role: string, actor: any, context: any): Promise<AssignedRole> {
 		const actorRef: EntityReference = await this._provider.getReference(actor);
 		const contextRef: EntityReference = await this._provider.getReference(context);
-		return this._strategy.revokeRole(role, actorRef, contextRef);		
+		return this._strategy.revokeRole(role, actorRef, contextRef);
 	}
 
 	getReference(entity: any) {
@@ -43,7 +43,9 @@ export default class AuthorizationService {
 
 	private async _canPerform(operation: string, actor: EntityReference, context?: EntityReference): Promise<boolean> {
 		const assignedRoles = await this._strategy.getAssignedRoles(actor, context);
+		console.log('assigned roles ', assignedRoles);
 		const roles = await this._strategy.getRoles(assignedRoles.map(({ name }) => name));
+		console.log('actual roles ', roles);
 		if (roles.filter(({ ops: operations }) => operations.includes(operation)).length) {
 			return true;
 		} else {
