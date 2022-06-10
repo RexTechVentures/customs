@@ -63,7 +63,6 @@ export default class MongoosePersistenceStrategy implements PersistenceStrategy 
 	async initCacheGoose(connection: Promise<Mongoose>, redisConfig?: RedisConfig) {
 		// Test in memory caching only
 		const engine = redisConfig ? 'memory' : 'memory';
-		console.log('initing cache ', engine, redisConfig);
 		cachegoose(await connection, {
 			engine,
 			...redisConfig,
@@ -72,14 +71,11 @@ export default class MongoosePersistenceStrategy implements PersistenceStrategy 
 
 	async getRoles(roleNames: string[]): Promise<Role[]> {
 		const roles = await this._roles;
-		console.time('fetch-role');
 		const stats: any = await roles
 			.find({ name: { $in: roleNames } })
 			.explain()
 			.exec();
 		const response = await (roles.find({ name: { $in: roleNames } }) as any).cache(0, 'roles').exec();
-		console.timeEnd('fetch-role');
-		console.log('Getting query stats', stats.executionStats);
 		return response;
 	}
 
