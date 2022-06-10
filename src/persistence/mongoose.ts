@@ -43,32 +43,30 @@ const AssignedRoleSchema = new Schema<AssignedRole & MongoEntity>(
 );
 AssignedRoleSchema.index({ actor: 1, context: 1, name: 1 }, { unique: true });
 
+interface RedisConfig {
+	host: string;
+	port: string;
+}
 export default class MongoosePersistenceStrategy implements PersistenceStrategy {
 	private _roles: Promise<Model<Role & MongoEntity>>;
 	private _assignedRoles: Promise<Model<AssignedRole & MongoEntity>>;
 	private _cache: boolean = false;
 
-	constructor(connection: Promise<Mongoose>, redisUrl?: any) {
+	constructor(connection: Promise<Mongoose>, redisConfig?: RedisConfig) {
 		this._roles = connection.then(database => database.model<Role & MongoEntity>('roles', RoleSchema));
 		this._assignedRoles = connection.then(database =>
 			database.model<AssignedRole & MongoEntity>('assigned_roles', AssignedRoleSchema)
 		);
-		this.initCacheGoose(connection, redisUrl);
+		this.initCacheGoose(connection, redisConfig);
 	}
 
-	async initCacheGoose(connection: Promise<Mongoose>, redisUrl?: string) {
-		const client = redisUrl
-			? createClient({
-					url: redisUrl,
-			  })
-			: null;
-		await client?.connect();
+	async initCacheGoose(connection: Promise<Mongoose>, redisConfig?: RedisConfig) {
 		// Test in memory caching only
-		const engine = redisUrl ? 'memory' : 'memory';
-		console.log('initing cache ', engine, client);
+		const engine = redisConfig ? 'memory' : 'memory';
+		console.log('initing cache ', engine, redisConfig);
 		cachegoose(await connection, {
 			engine,
-			client,
+			...redisConfig,
 		});
 	}
 
