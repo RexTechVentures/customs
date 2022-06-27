@@ -4,6 +4,10 @@ import { roles } from 'test/fixture';
 import { v4 } from 'uuid';
 import { AssignedRole, PersistenceStrategy, Role } from '.';
 
+// Cachegoose doesnt support es6 imports, didnt find a better way, feel free to change.
+const cachegoose = require('recachegoose');
+import { createClient } from 'redis';
+
 interface MongoEntity {
 	_id: string;
 }
@@ -39,20 +43,40 @@ const AssignedRoleSchema = new Schema<AssignedRole & MongoEntity>(
 );
 AssignedRoleSchema.index({ actor: 1, context: 1, name: 1 }, { unique: true });
 
+interface RedisConfig {
+	host: string;
+	port: string;
+}
 export default class MongoosePersistenceStrategy implements PersistenceStrategy {
 	private _roles: Promise<Model<Role & MongoEntity>>;
 	private _assignedRoles: Promise<Model<AssignedRole & MongoEntity>>;
+	private _cache: boolean = false;
 
-	constructor(connection: Promise<Mongoose>) {
+	constructor(connection: Promise<Mongoose>, redisConfig?: RedisConfig) {
 		this._roles = connection.then(database => database.model<Role & MongoEntity>('roles', RoleSchema));
 		this._assignedRoles = connection.then(database =>
 			database.model<AssignedRole & MongoEntity>('assigned_roles', AssignedRoleSchema)
 		);
+		this.initCacheGoose(connection, redisConfig);
+	}
+
+	async initCacheGoose(connection: Promise<Mongoose>, redisConfig?: RedisConfig) {
+		// Test in memory caching only
+		const engine = redisConfig ? 'memory' : 'memory';
+		cachegoose(await connection, {
+			engine,
+			...redisConfig,
+		});
 	}
 
 	async getRoles(roleNames: string[]): Promise<Role[]> {
 		const roles = await this._roles;
-		return roles.find({ name: { $in: roleNames } });
+		const stats: any = await roles
+			.find({ name: { $in: roleNames } })
+			.explain()
+			.exec();
+		const response = await (roles.find({ name: { $in: roleNames } }) as any).cache(0, 'roles').exec();
+		return response;
 	}
 
 	async getAssignedRoles(actor: EntityReference, context?: EntityReference): Promise<AssignedRole[]> {
@@ -62,7 +86,7 @@ export default class MongoosePersistenceStrategy implements PersistenceStrategy 
 
 	async findRoleByName(name: string): Promise<Role | null | undefined> {
 		const roles = await this._roles;
-		return roles.findOne({ name });
+		return (roles.findOne({ name }) as any).cache(0, `role-${name}`);
 	}
 
 	async createRole(name: string, operations: string[]): Promise<Role> {
@@ -75,7 +99,10 @@ export default class MongoosePersistenceStrategy implements PersistenceStrategy 
 		const role = await roles.findOne({ name });
 		if (!role) throw new Error('Role not found');
 		role.ops = operations;
-		return role.save();
+		await role.save();
+		cachegoose.clearCache(`roles`);
+		cachegoose.clearCache(`role-${name}`);
+		return role;
 	}
 
 	async assignRole(roleName: string, actor: EntityReference, context: EntityReference): Promise<AssignedRole> {
@@ -109,8 +136,12 @@ export default class MongoosePersistenceStrategy implements PersistenceStrategy 
 		if (!role) throw new Error('Role not found');
 
 		const existingAssignments = await assignedRoles.find({ name: roleName });
-		await Promise.all(existingAssignments.map(assignedRole => this.revokeRole(roleName, assignedRole.actor, assignedRole.context)));
+		await Promise.all(
+			existingAssignments.map(assignedRole => this.revokeRole(roleName, assignedRole.actor, assignedRole.context))
+		);
 
-		return role.remove();
+		await role.remove();
+		cachegoose.clearCache(`role-${roleName}`);
+		return role;
 	}
 }
