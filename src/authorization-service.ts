@@ -25,6 +25,14 @@ export default class AuthorizationService {
 		return this._strategy.assignRole(role, actorRef, contextRef);
 	}
 
+	async getRole(actor: any, context: any): Promise<Role | null | undefined> {
+		const assignedRole = await this._strategy.getAssignedRole(actor, context);
+		if(!assignedRole) {
+			return null;
+		}
+		return this._strategy.getRole(assignedRole.name);
+	} 
+
 	async revokeRole(role:string, actor: any, context: any): Promise<AssignedRole> {
 		const actorRef: EntityReference = await this._provider.getReference(actor);
 		const contextRef: EntityReference = await this._provider.getReference(context);
