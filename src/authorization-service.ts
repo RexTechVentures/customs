@@ -26,8 +26,9 @@ export default class AuthorizationService {
 	}
 
 	async getRole(actor: any, context: any): Promise<Role | null | undefined> {
-		const assignedRole: any = await this._strategy.getAssignedRole(actor, context);
-		const role = await this._strategy.getRole(assignedRole.name);
+		const assignedRole = await this._strategy.getAssignedRole(actor, context);
+		const name: string = assignedRole?.name || '';
+		const role = await this._strategy.getRole(name);
 		if(!role) {
 			return null;
 		}
