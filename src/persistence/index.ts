@@ -19,4 +19,6 @@ export interface PersistenceStrategy {
 	updateRole(name: string, operations: string[]): Promise<Role>;
 	assignRole(role: string, actor: EntityReference, context: EntityReference): Promise<AssignedRole>;
 	revokeRole(role: string, actor: EntityReference, context: EntityReference): Promise<AssignedRole>;
+	getAssignedRole(actor: EntityReference, context: EntityReference): Promise<AssignedRole | null | undefined>;
+	getRole(roleName: string): Promise<Role | null | undefined>;
 }

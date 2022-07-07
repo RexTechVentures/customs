@@ -20,6 +20,16 @@ export default class MemoryStrategy implements PersistenceStrategy {
 		);
 	}
 
+	async getRole(roleName: string): Promise<Role | null | undefined> {
+		return this._roles.find(role => role.name === roleName);
+	}
+
+	async getAssignedRole(actor: EntityReference, context?: EntityReference): Promise<AssignedRole | null | undefined >{
+		return this._assignments.find(role =>
+			refEq(role.actor, actor) && !!context ? refEq(role.context, context) : !role.context
+		);
+	}
+
 	async findRoleByName(name: string): Promise<Role | null | undefined> {
 		return this._roles.find(role => role.name === name);
 	}

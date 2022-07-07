@@ -60,6 +60,20 @@ export default class MongoosePersistenceStrategy implements PersistenceStrategy 
 		return assignedRoles.find({ actor, context });
 	}
 
+	async getAssignedRole(actor:EntityReference, context?:EntityReference): Promise<AssignedRole | null | undefined> {
+		const assignedRoles = await this._assignedRoles;
+		const assignedRole = await assignedRoles.findOne({ actor, context });
+		if(!assignedRole) throw new Error('assigned role not found');
+		return assignedRole;
+	}
+  
+	async getRole(roleName: string): Promise<Role | null | undefined> {
+		const roles = await this._roles;
+		const role = roles.findOne({ name: roleName });
+		if(!role) throw new Error('role not found');
+		return role;
+	}
+ 
 	async findRoleByName(name: string): Promise<Role | null | undefined> {
 		const roles = await this._roles;
 		return roles.findOne({ name });
