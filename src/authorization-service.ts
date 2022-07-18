@@ -29,16 +29,19 @@ export default class AuthorizationService {
 		const assignedRole = await this._strategy.getAssignedRole(actor, context);
 		const name: string = assignedRole?.name || '';
 		const role = await this._strategy.getRole(name);
-		if(!role) {
+		if (!role) {
 			return null;
 		}
 		return role;
-	} 
+	}
+	async getRoles(roleNames?: string[]): Promise<Role[]> {
+		return this._strategy.getRoles(roleNames);
+	}
 
-	async revokeRole(role:string, actor: any, context: any): Promise<AssignedRole> {
+	async revokeRole(role: string, actor: any, context: any): Promise<AssignedRole> {
 		const actorRef: EntityReference = await this._provider.getReference(actor);
 		const contextRef: EntityReference = await this._provider.getReference(context);
-		return this._strategy.revokeRole(role, actorRef, contextRef);		
+		return this._strategy.revokeRole(role, actorRef, contextRef);
 	}
 
 	getReference(entity: any) {
