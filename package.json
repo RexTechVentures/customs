@@ -1,45 +1,45 @@
 {
-    "name": "@rex/customs",
-    "version": "1.0.4",
-    "license": "UNLICENSED",
-    "description": "Foundational approach for implementing RBAC in Node",
-    "main": "./dist/src/index.js",
-    "types": "./dist/src/index.d.ts",
-    "author": "cdement@rex.com",
-    "scripts": {
-        "build": "tsc",
-        "lint": "eslint . --ext .ts",
-        "prettier:check": "prettier --check .",
-        "prettier:fix": "prettier --write .",
-        "test": "cross-env NODE_ENV=test mocha",
-        "release": "yarn build && npm publish"
-    },
-    "dependencies": {
-        "mongoose": "^6.3.2",
-        "uuid": "^8.3.2"
-    },
-    "devDependencies": {
-        "@types/chai": "^4.3.1",
-        "@types/express": "^4.17.13",
-        "@types/mocha": "^9.1.1",
-        "@types/mongoose": "^5.11.97",
-        "@types/node": "^17.0.31",
-        "@types/supertest": "^2.0.12",
-        "@types/uuid": "^8.3.4",
-        "@typescript-eslint/eslint-plugin": "^5.0.0",
-        "@typescript-eslint/parser": "^5.0.0",
-        "chai": "^4.3.6",
-        "cross-env": "^7.0.3",
-        "eslint": "^8.0.0",
-        "mocha": "^10.0.0",
-        "prettier": "^2.5.1",
-        "supertest": "^6.2.3",
-        "ts-node": "^10.0.0",
-        "tsc-hooks": "^1.1.1",
-        "tsconfig-paths": "^3.14.1",
-        "typescript": "^4.5.0"
-    },
-    "peerDependencies": {
-        "express": "^4.18.1"
-    }
+	"name": "@rex/customs",
+	"version": "1.0.5",
+	"license": "UNLICENSED",
+	"description": "Foundational approach for implementing RBAC in Node",
+	"main": "./dist/src/index.js",
+	"types": "./dist/src/index.d.ts",
+	"author": "cdement@rex.com",
+	"scripts": {
+		"build": "tsc",
+		"lint": "eslint . --ext .ts",
+		"prettier:check": "prettier --check .",
+		"prettier:fix": "prettier --write .",
+		"test": "cross-env NODE_ENV=test mocha",
+		"release": "yarn build && npm publish"
+	},
+	"dependencies": {
+		"mongoose": "^6.3.2",
+		"uuid": "^8.3.2"
+	},
+	"devDependencies": {
+		"@types/chai": "^4.3.1",
+		"@types/express": "^4.17.13",
+		"@types/mocha": "^9.1.1",
+		"@types/mongoose": "^5.11.97",
+		"@types/node": "^17.0.31",
+		"@types/supertest": "^2.0.12",
+		"@types/uuid": "^8.3.4",
+		"@typescript-eslint/eslint-plugin": "^5.0.0",
+		"@typescript-eslint/parser": "^5.0.0",
+		"chai": "^4.3.6",
+		"cross-env": "^7.0.3",
+		"eslint": "^8.0.0",
+		"mocha": "^10.0.0",
+		"prettier": "^2.5.1",
+		"supertest": "^6.2.3",
+		"ts-node": "^10.0.0",
+		"tsc-hooks": "^1.1.1",
+		"tsconfig-paths": "^3.14.1",
+		"typescript": "^4.5.0"
+	},
+	"peerDependencies": {
+		"express": "^4.18.1"
+	}
 }
