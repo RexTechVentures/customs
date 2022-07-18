@@ -12,6 +12,7 @@ export interface AssignedRole {
 }
 
 export interface PersistenceStrategy {
+	getRoleById(id: string): Promise<Role>;
 	getRoles(roleNames?: string[]): Promise<Role[]>;
 	getAssignedRoles(actor: EntityReference, context?: EntityReference): Promise<AssignedRole[]>;
 	findRoleByName(name: string): Promise<Role | null | undefined>;

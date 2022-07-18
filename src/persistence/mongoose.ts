@@ -77,6 +77,12 @@ export default class MongoosePersistenceStrategy implements PersistenceStrategy 
 		if (!role) throw new Error('role not found');
 		return role;
 	}
+	async getRoleById(id: string): Promise<Role> {
+		const roles = await this._roles;
+		const role = await roles.findOne({ _id: id });
+		if (!role) throw new Error('role not found');
+		return role;
+	}
 
 	async findRoleByName(name: string): Promise<Role | null | undefined> {
 		const roles = await this._roles;
