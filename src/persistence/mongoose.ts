@@ -50,9 +50,13 @@ export default class MongoosePersistenceStrategy implements PersistenceStrategy 
 		);
 	}
 
-	async getRoles(roleNames: string[]): Promise<Role[]> {
+	async getRoles(roleNames?: string[]): Promise<Role[]> {
 		const roles = await this._roles;
-		return roles.find({ name: { $in: roleNames } });
+		if (!roleNames) {
+			return roles.find({});
+		} else {
+			return roles.find({ name: { $in: roleNames } });
+		}
 	}
 
 	async getAssignedRoles(actor: EntityReference, context?: EntityReference): Promise<AssignedRole[]> {
@@ -60,20 +64,20 @@ export default class MongoosePersistenceStrategy implements PersistenceStrategy 
 		return assignedRoles.find({ actor, context });
 	}
 
-	async getAssignedRole(actor:EntityReference, context?:EntityReference): Promise<AssignedRole | null | undefined> {
+	async getAssignedRole(actor: EntityReference, context?: EntityReference): Promise<AssignedRole | null | undefined> {
 		const assignedRoles = await this._assignedRoles;
 		const assignedRole = await assignedRoles.findOne({ actor, context });
-		if(!assignedRole) throw new Error('assigned role not found');
+		if (!assignedRole) throw new Error('assigned role not found');
 		return assignedRole;
 	}
-  
+
 	async getRole(roleName: string): Promise<Role | null | undefined> {
 		const roles = await this._roles;
 		const role = roles.findOne({ name: roleName });
-		if(!role) throw new Error('role not found');
+		if (!role) throw new Error('role not found');
 		return role;
 	}
- 
+
 	async findRoleByName(name: string): Promise<Role | null | undefined> {
 		const roles = await this._roles;
 		return roles.findOne({ name });
@@ -123,7 +127,9 @@ export default class MongoosePersistenceStrategy implements PersistenceStrategy 
 		if (!role) throw new Error('Role not found');
 
 		const existingAssignments = await assignedRoles.find({ name: roleName });
-		await Promise.all(existingAssignments.map(assignedRole => this.revokeRole(roleName, assignedRole.actor, assignedRole.context)));
+		await Promise.all(
+			existingAssignments.map(assignedRole => this.revokeRole(roleName, assignedRole.actor, assignedRole.context))
+		);
 
 		return role.remove();
 	}
