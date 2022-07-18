@@ -23,8 +23,15 @@ export default class MemoryStrategy implements PersistenceStrategy {
 	async getRole(roleName: string): Promise<Role | null | undefined> {
 		return this._roles.find(role => role.name === roleName);
 	}
+	async getRoleById(id: string): Promise<Role> {
+		const role = this._roles.find(role => role._id === id);
+		if (!role) {
+			throw new Error('Could not find role');
+		}
+		return role;
+	}
 
-	async getAssignedRole(actor: EntityReference, context?: EntityReference): Promise<AssignedRole | null | undefined >{
+	async getAssignedRole(actor: EntityReference, context?: EntityReference): Promise<AssignedRole | null | undefined> {
 		return this._assignments.find(role =>
 			refEq(role.actor, actor) && !!context ? refEq(role.context, context) : !role.context
 		);
@@ -37,7 +44,7 @@ export default class MemoryStrategy implements PersistenceStrategy {
 	async createRole(name: string, operations: string[]): Promise<Role> {
 		if (await this.findRoleByName(name)) throw new Error('Duplicate role');
 
-		const role: Role = { name, ops: operations };
+		const role: Role = { _id: 'test', name, ops: operations };
 		this._roles.push(role);
 		return role;
 	}
@@ -67,9 +74,9 @@ export default class MemoryStrategy implements PersistenceStrategy {
 
 	async revokeRole(role: string, actor: EntityReference, context: EntityReference): Promise<AssignedRole> {
 		const i = this._assignments.findIndex(assignment =>
-			assignment.name === role &&
-			refEq(assignment.actor, actor) && 
-			!!context ? refEq(assignment.context, context) : !assignment.context
+			assignment.name === role && refEq(assignment.actor, actor) && !!context
+				? refEq(assignment.context, context)
+				: !assignment.context
 		);
 		if (i === -1) {
 			throw new Error('Role not assigned');

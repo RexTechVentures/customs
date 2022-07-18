@@ -1,6 +1,7 @@
 import { EntityReference } from 'src/entity';
 
 export interface Role {
+	_id: string;
 	name: string;
 	ops: string[];
 }
