@@ -44,7 +44,7 @@ export default class MemoryStrategy implements PersistenceStrategy {
 	async createRole(name: string, operations: string[]): Promise<Role> {
 		if (await this.findRoleByName(name)) throw new Error('Duplicate role');
 
-		const role: Role = { _id: 'test', name, ops: operations };
+		const role: Role = { name, ops: operations };
 		this._roles.push(role);
 		return role;
 	}
